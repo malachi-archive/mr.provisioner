@@ -15,6 +15,11 @@ using Android;
 using Android.Content.PM;
 using Android.Util;
 using System.Net.NetworkInformation;
+using Com.AugustCellars.CoAP.Net;
+using Com.AugustCellars.CoAP.DTLS;
+using Com.AugustCellars.COSE;
+using PeterO.Cbor;
+using Com.AugustCellars.CoAP;
 
 namespace client.android
 {
@@ -58,9 +63,28 @@ namespace client.android
         }
 
 
-        protected void CoapConnect()
+        protected void CoapConnect(string host)
         {
+            // https://github.com/malachi-iot/CoAP-CSharp/blob/master/CoAP.Example/CoAP.Client/ExampleClient.cs
+            // https://github.com/malachi-iot/CoAP-CSharp/blob/master/CoAP.Test/DTLS/DTLSClientEndPoint.cs
+            //OneKey authKey = new OneKey();
 
+            //CoAPEndPoint ep = new DTLSClientEndPoint(authKey);
+
+            var ep = new DTLSClientEndPoint(null);
+
+            var req = new Request(Method.GET)
+            {
+                URI = new Uri($"coaps://{host}:5682/.well-known/core"),
+                EndPoint = ep
+            };
+
+            ep.Start();
+
+            req.Send();
+            req.WaitForResponse(5000);
+
+            //CBORObject.FromO
         }
 
 
@@ -141,7 +165,7 @@ namespace client.android
 
                 if(host != null)
                 {
-                    CoapConnect();
+                    CoapConnect(host);
                 }
             }
         }
