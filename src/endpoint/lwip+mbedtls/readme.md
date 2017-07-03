@@ -1,0 +1,1 @@
+This code is primarily for a FreeRTOS environment, but it is hoped it can be easily #ifdef'd into others
