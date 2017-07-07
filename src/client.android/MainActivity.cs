@@ -4,7 +4,7 @@ using Android.OS;
 
 namespace client.android
 {
-    [Activity(Label = "client.android", MainLauncher = true, Icon = "@drawable/icon")]
+    [Activity(Label = "Mr. Provisioner", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainActivity : Activity
     {
         // Semi-singleton

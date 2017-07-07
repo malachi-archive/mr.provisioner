@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="client.android.client.android" android:versionCode="1" android:versionName="1.0" android:installLocation="auto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" android:installLocation="auto" package="mr_provisioner">
 	<uses-sdk android:minSdkVersion="16" />
 	<!-- https://developer.xamarin.com/api/namespace/Android.Net.Wifi/ -->
 	<uses-feature android:name="android.hardware.wifi" />
