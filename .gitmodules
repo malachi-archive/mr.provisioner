@@ -1,0 +1,3 @@
+[submodule "ext/useful-scripts"]
+	path = ext/useful-scripts
+	url = git@gitlab.com:malachi-linux/useful-scripts.git
