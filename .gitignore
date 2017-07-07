@@ -1,6 +1,10 @@
 src/*/bin
 src/*/obj
 src/packages
-.vs/
 
+# Visual studio ignores
+.vs/
 *.user
+
+# Xamarin studio ignores
+*.userprefs

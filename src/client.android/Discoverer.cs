@@ -20,6 +20,7 @@ using Com.AugustCellars.CoAP.DTLS;
 using Com.AugustCellars.COSE;
 using PeterO.Cbor;
 using Com.AugustCellars.CoAP;
+using System.Text.RegularExpressions;
 
 namespace client.android
 {
@@ -110,6 +111,23 @@ namespace client.android
         {
             DiscoverOurNodes(scanResult =>
             {
+				var ssid = scanResult.Ssid;
+				const string matchPattern = @"\[(.*?)\]"; // old = @"\[([^\]]*)\]"
+
+				Log.Info(TAG, $"Regex discovering capabilities: {scanResult.Capabilities}");
+
+// lifted  and adapted from https://stackoverflow.com/questions/378415/how-do-i-extract-text-that-lies-between-parentheses-round-brackets
+// and here https://stackoverflow.com/questions/740642/c-sharp-regex-split-everything-inside-square-brackets
+				MatchCollection matches = Regex.Matches(scanResult.Capabilities, matchPattern);
+
+				foreach (Match match in matches)
+				{
+					Log.Info(TAG, $"Regex discovery: {match.Groups[1].Value}");
+				}
+
+				// This Regex code seems to work well, EXCEPT importantly it appears
+				// to lock the app.  Don't know why...
+
                 if(string.IsNullOrEmpty(scanResult.Capabilities))
                 {
                     return true;
