@@ -4,6 +4,8 @@ extern "C" {
 #include <lwip/netif.h>
 #include <lwip/api.h>
 
+#include <netif/etharp.h>
+
 #include "dhcpserver.h"
 
 #include <espressif/esp_common.h>
@@ -12,8 +14,25 @@ extern "C" {
 
 }
 
-const char AP_SSID[] = "esp-open-rtos AP";
+// TODO: optimize
+const char AP_SSID[] = "esp-";
 
+
+#ifdef UNUSEDXXX
+#define ARP_TABLE_SIZE 4
+
+void get_mac()
+{
+    ip_addr_t adrs[ARP_TABLE_SIZE + 2];
+
+/* create one static entry */
+    //err = etharp_add_static_entry(&adrs[ARP_TABLE_SIZE], &test_ethaddr3);
+    //fail_unless(err == ERR_OK);
+    idx = etharp_find_addr(NULL, &adrs[ARP_TABLE_SIZE], &unused_ethaddr, &unused_ipaddr);
+    fail_unless(idx == 0);
+    fail_unless(linkoutput_ctr == 0);    
+}
+#endif
 
 // Lifted from https://github.com/SuperHouse/esp-open-rtos/blob/master/examples/access_point/access_point.c
 void setup_ap()
@@ -34,10 +53,20 @@ void setup_ap()
 
     struct sdk_softap_config ap_config;
     
-    strcpy((char*) ap_config.ssid, AP_SSID);
+    //strcpy((char*) ap_config.ssid, AP_SSID);
+
+    uint8_t mac[6];
+
+    sdk_wifi_get_macaddr(SOFTAP_IF, mac);
+
+    // TODO: optimize this
+    int len = sprintf((char*)ap_config.ssid, "%s-%02x%02x%02x", AP_SSID, 
+        mac[3], mac[4], mac[5]);
+
     ap_config.ssid_hidden = 0;
     ap_config.channel = 3;
-    ap_config.ssid_len = strlen(AP_SSID);
+    //ap_config.ssid_len = strlen((char*)ap_config.ssid);
+    ap_config.ssid_len = len;
     ap_config.authmode = AUTH_OPEN;
     memset(ap_config.password, 0, sizeof(ap_config.password));
     ap_config.max_connection = 3;
