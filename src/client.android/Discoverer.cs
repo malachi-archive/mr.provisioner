@@ -72,6 +72,8 @@ namespace client.android
 
 			//CoAPEndPoint ep = new DTLSClientEndPoint(authKey);
 
+			Log.Info(TAG, $"Attempting CoAP connection to {host}");
+
 			var ep = new DTLSClientEndPoint(null);
 
 			var req = new Request(Method.GET)
@@ -95,13 +97,13 @@ namespace client.android
 			// TODO: Do mDNS stuff also
 			var ping = new Ping();
 			var pingOptions = new PingOptions();
-			string hostName = "192.168.4.1";
+			string hostName = "176.16.0.1";
 
 			pingOptions.DontFragment = true;
 
 			var data = Enumerable.Repeat<byte>(65, 32).ToArray();
 
-			var reply = ping.Send(hostName, 120, data, pingOptions);
+			var reply = ping.Send(hostName, 3000, data, pingOptions);
 
 			return reply.Status == IPStatus.Success ? hostName : null;
 		}
