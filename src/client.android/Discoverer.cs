@@ -74,7 +74,16 @@ namespace client.android
             //ep.Start();
 
             request.Send();
-            request.WaitForResponse(5000);
+            Response response = request.WaitForResponse(2000);
+
+            if (response == null)
+            {
+                Log.Info(TAG, "COAP timeout");
+                return;
+            }
+
+            Log.Info(TAG, $"COAP responded: format = {response.ContentType}");
+            Log.Info(TAG, $"COAP responded: payload = {response.PayloadString}");
         }
 
         protected void CoapsConnect(string host)
