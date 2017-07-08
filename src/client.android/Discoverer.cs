@@ -187,6 +187,12 @@ namespace client.android
             {
                 Log.Info(TAG, $"Inspecting ssid: {scanResult.Ssid}");
 
+                // DHCP doesn't seem to be doling out when doing this
+                // So either I'm not joining or I a not waiting long enough
+                // it *was* working, as I saw a successful ping before
+                // Not sure what's different
+                // Manually connecting to ESP AP does dole out an AP
+
                 var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
                 int netId;
 
