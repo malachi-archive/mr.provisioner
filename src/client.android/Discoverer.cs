@@ -157,9 +157,17 @@ namespace client.android
         }
 
 
+        public event Action<IList<ScanResult>> CandidateWiFiDiscovered;
+
+
         protected void DiscoverOurNodes()
         {
             DiscoverOurNodes(IsOpenWifi);
+
+            // FIX: this is 100% the wrong place for this, but doing it
+            // here just to keep the ball rolling
+            CandidateWiFiDiscovered?.Invoke(
+                wifiManager.ScanResults.Where(IsOpenWifi).ToArray());
         }
 
 
@@ -186,6 +194,12 @@ namespace client.android
             foreach (ScanResult scanResult in wifiManager.ScanResults.Where(isCandidateNetwork))
             {
                 Log.Info(TAG, $"Inspecting ssid: {scanResult.Ssid}");
+
+                // DHCP doesn't seem to be doling out when doing this
+                // So either I'm not joining or I a not waiting long enough
+                // it *was* working, as I saw a successful ping before
+                // Not sure what's different
+                // Manually connecting to ESP AP does dole out an AP
 
                 var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
                 int netId;
