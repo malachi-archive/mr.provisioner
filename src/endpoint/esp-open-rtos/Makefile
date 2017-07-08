@@ -5,6 +5,7 @@ PROGRAM=main
 EXT_DIR = ../../../ext
 #PROGRAM_INC_DIR += ../../../ext/mbedtlscpp
 PROGRAM_INC_DIR += $(EXT_DIR)/coapcpp
+PROGRAM_INC_DIR += $(EXT_DIR)/lwipcpp
 
 EXTRA_COMPONENTS = extras/mbedtls extras/dhcpserver $(EXT_DIR)/yacoap $(EXT_DIR)/util.embedded
 

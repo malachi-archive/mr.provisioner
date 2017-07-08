@@ -2,6 +2,7 @@ INC_DIRS += $(util_embedded_ROOT)util.embedded/src
 
 util_embedded_SRC_DIR += $(util_embedded_ROOT)util.embedded/src
 util_embedded_SRC_DIR += $(util_embedded_ROOT)util.embedded/src/fact
+util_embedded_SRC_DIR += $(util_embedded_ROOT)util.embedded/src/fact/streams
 util_embedded_SRC_DIR += $(util_embedded_ROOT)util.embedded/src/fact/hardware
 #util_embedded_SRC_DIR += $(util_embedded_ROOT)util.embedded/src/driver/atmel/sam
 # OK don't try to pull in EVERYTHING just yet!!

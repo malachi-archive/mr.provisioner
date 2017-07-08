@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "resources.c": "cpp",
-        "piggyback.c": "cpp"
+        "piggyback.c": "cpp",
+        "request_get.c": "cpp",
+        "request_put.c": "cpp"
     }
 }

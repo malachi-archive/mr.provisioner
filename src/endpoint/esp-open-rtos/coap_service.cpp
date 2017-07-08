@@ -5,7 +5,7 @@
 #include "task.h"
 #include "esp8266.h"
 
-#include "coap.hpp"
+#include "coap_lwip.hpp"
 
 //const uint16_t rsplen = 128;
 //static char rsp[rsplen] = "";
@@ -29,7 +29,8 @@ coap_resource_t resources[] =
 };
 
 
-yacoap::CoapManager<resources> coapManager;
+//yacoap::CoapManager<resources> coapManager;
+yacoap::CoapServer<resources> coapServer;
 
 /*
 void resource_setup(const coap_resource_t *resources)
@@ -39,12 +40,23 @@ void resource_setup(const coap_resource_t *resources)
 } */
 
 
+void coapTask(void *pvParameters)
+{
+    for(;;)
+    {
+        coapServer.handler();
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+    }
+}
+
+
 
 void setup_coap()
 {
     //resource_setup(resources);
 
-    // really want to hang off DTLS task, since it will have a massive
+    // TODO: really want to hang off DTLS task, since it will have a massive
     // stack
-    //xTaskCreate(coapTask, "coap", 1024, NULL, 2, NULL);
+    // while we're building things out, run a non-DTLS version 
+    xTaskCreate(coapTask, "coap", 1024, NULL, 2, NULL);
 }
