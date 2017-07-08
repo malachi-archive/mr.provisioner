@@ -1,3 +1,5 @@
+#define DEBUG_ENABLE1
+
 #include <stdlib.h>
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
@@ -11,26 +13,41 @@
 //static char rsp[rsplen] = "";
 const coap_resource_path_t path_well_known_core = {2, {".well-known", "core"}};
 
+//extern coap_resource_t resources[];
+static int _handle_get_well_known_core(const coap_resource_t *resource,
+                                          const coap_packet_t *inpkt,
+                                          coap_packet_t *pkt);
+
 coap_resource_t resources[] =
 {
-    /*
     {COAP_RDY, COAP_METHOD_GET, COAP_TYPE_ACK,
-        handle_get_well_known_core, &path_well_known_core,
+        _handle_get_well_known_core, &path_well_known_core,
         COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_APP_LINKFORMAT)},
+    /*
     {COAP_RDY, COAP_METHOD_GET, COAP_TYPE_ACK,
         handle_get_light, &path_light,
         COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_TXT_PLAIN)},
     {COAP_RDY, COAP_METHOD_PUT, COAP_TYPE_ACK,
         handle_put_light, &path_light,
-        COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)},
-    {(coap_state_t)0, (coap_method_t)0, (coap_msgtype_t)0,
-        NULL, NULL,
-        COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)} */
+        COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)}, */
+    COAP_RESOURCE_NULL
 };
 
 
 //yacoap::CoapManager<resources> coapManager;
+
 yacoap::CoapServer<resources> coapServer;
+
+static int _handle_get_well_known_core(const coap_resource_t *resource,
+                                          const coap_packet_t *inpkt,
+                                          coap_packet_t *pkt)
+{
+    return coapServer.handle_get_well_known_core(resource, inpkt, pkt);
+}
+
+#ifdef DEBUG_ENABLE1
+
+
 
 /*
 void resource_setup(const coap_resource_t *resources)
@@ -46,9 +63,10 @@ void coapTask(void *pvParameters)
     {
         coapServer.handler();
         vTaskDelay(5000 / portTICK_PERIOD_MS);
+        printf("\nRecycling");
     }
 }
-
+#endif
 
 
 void setup_coap()
