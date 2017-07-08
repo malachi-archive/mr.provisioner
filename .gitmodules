@@ -4,3 +4,9 @@
 [submodule "ext/yacoap/YaCoAP"]
 	path = ext/yacoap/YaCoAP
 	url = git@github.com:malachi-iot/YaCoAP.git
+[submodule "ext/coapcpp"]
+	path = ext/coapcpp
+	url = git@github.com:malachi-iot/coapcpp.git
+[submodule "ext/lwipcpp"]
+	path = ext/lwipcpp
+	url = git@github.com:malachi-iot/lwipcpp.git

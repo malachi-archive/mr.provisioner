@@ -3,6 +3,7 @@
 PROGRAM=main
 
 #PROGRAM_INC_DIR += ../../../ext/mbedtlscpp
+PROGRAM_INC_DIR += ../../../ext/coapcpp
 
 EXTRA_COMPONENTS = extras/mbedtls extras/dhcpserver ../../../ext/yacoap
 

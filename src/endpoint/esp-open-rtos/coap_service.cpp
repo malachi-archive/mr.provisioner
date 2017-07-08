@@ -5,15 +5,11 @@
 #include "task.h"
 #include "esp8266.h"
 
-extern "C" 
-{
+#include "coap.hpp"
 
-#include "coap.h"
-}
-
-const uint16_t rsplen = 128;
-static char rsp[rsplen] = "";
-static const coap_resource_path_t path_well_known_core = {2, {".well-known", "core"}};
+//const uint16_t rsplen = 128;
+//static char rsp[rsplen] = "";
+const coap_resource_path_t path_well_known_core = {2, {".well-known", "core"}};
 
 coap_resource_t resources[] =
 {
@@ -32,20 +28,23 @@ coap_resource_t resources[] =
         COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)} */
 };
 
+
+yacoap::CoapManager<resources> coapManager;
+
+/*
 void resource_setup(const coap_resource_t *resources)
 {
     coap_make_link_format(resources, rsp, rsplen);
     printf("resources: %s\n", rsp);
-}
+} */
 
-void coapTask(void *pvParameters)
-{
-}
 
 
 void setup_coap()
 {
-    resource_setup(resources);
+    //resource_setup(resources);
 
-    xTaskCreate(coapTask, "coap", 1024, NULL, 2, NULL);
+    // really want to hang off DTLS task, since it will have a massive
+    // stack
+    //xTaskCreate(coapTask, "coap", 1024, NULL, 2, NULL);
 }
