@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "resources.c": "cpp",
+        "piggyback.c": "cpp"
+    }
+}

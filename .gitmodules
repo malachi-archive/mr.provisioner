@@ -1,3 +1,6 @@
 [submodule "ext/useful-scripts"]
 	path = ext/useful-scripts
 	url = git@gitlab.com:malachi-linux/useful-scripts.git
+[submodule "ext/yacoap/YaCoAP"]
+	path = ext/yacoap/YaCoAP
+	url = git@github.com:malachi-iot/YaCoAP.git

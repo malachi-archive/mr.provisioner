@@ -4,7 +4,7 @@ PROGRAM=main
 
 #PROGRAM_INC_DIR += ../../../ext/mbedtlscpp
 
-EXTRA_COMPONENTS = extras/mbedtls extras/dhcpserver
+EXTRA_COMPONENTS = extras/mbedtls extras/dhcpserver ../../../ext/yacoap
 
 CPPFLAGS += -DESP_OPEN_RTOS
 
