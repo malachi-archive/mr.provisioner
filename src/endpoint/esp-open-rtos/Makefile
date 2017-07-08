@@ -6,8 +6,7 @@ EXT_DIR = ../../../ext
 #PROGRAM_INC_DIR += ../../../ext/mbedtlscpp
 PROGRAM_INC_DIR += $(EXT_DIR)/coapcpp
 
-EXTRA_COMPONENTS = extras/mbedtls extras/dhcpserver $(EXT_DIR)/yacoap 
-#$(EXT_DIR)/util.embedded
+EXTRA_COMPONENTS = extras/mbedtls extras/dhcpserver $(EXT_DIR)/yacoap $(EXT_DIR)/util.embedded
 
 CPPFLAGS += -DESP_OPEN_RTOS
 
