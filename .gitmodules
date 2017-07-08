@@ -10,3 +10,6 @@
 [submodule "ext/lwipcpp"]
 	path = ext/lwipcpp
 	url = git@github.com:malachi-iot/lwipcpp.git
+[submodule "ext/util.embedded/util.embedded"]
+	path = ext/util.embedded/util.embedded
+	url = git@github.com:malachib/util.embedded.git
