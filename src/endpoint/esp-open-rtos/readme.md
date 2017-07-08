@@ -14,3 +14,6 @@ wifi_station_get_ap_info to pull all cached AP info structs
 if it's 0, we know to enter provisioning mode immediately
 My understanding is it is max 5 based on:
 http://www.esp8266.com/viewtopic.php?f=6&t=3150
+
+These might be useful too since we are posix-ing up our streams:
+http://www.gnu.org/software/libc/manual/html_node/String-Streams.html
