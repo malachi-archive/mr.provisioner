@@ -20,10 +20,20 @@ namespace client.android
             SetContentView (Resource.Layout.Main);
 
             var button = FindViewById<Button>(Resource.Id.button1);
+            var list = FindViewById<ListView>(Resource.Id.lstCandidates);
+
+            //list.Adapter
 
             button.Click += (s, e) =>
             {
                 var d = new Discoverer(ApplicationContext);
+
+                d.CandidateWiFiDiscovered += scanResults =>
+                {
+                    list.Adapter = new CandidateAdapter(this, scanResults);
+                };
+
+                //list.Adapter = new CandidateAdapter(d.
             };
         }
     }

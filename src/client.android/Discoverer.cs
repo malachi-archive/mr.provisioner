@@ -157,9 +157,17 @@ namespace client.android
         }
 
 
+        public event Action<IList<ScanResult>> CandidateWiFiDiscovered;
+
+
         protected void DiscoverOurNodes()
         {
             DiscoverOurNodes(IsOpenWifi);
+
+            // FIX: this is 100% the wrong place for this, but doing it
+            // here just to keep the ball rolling
+            CandidateWiFiDiscovered?.Invoke(
+                wifiManager.ScanResults.Where(IsOpenWifi).ToArray());
         }
 
 
