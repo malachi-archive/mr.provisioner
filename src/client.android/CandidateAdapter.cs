@@ -60,6 +60,8 @@ namespace client.android
             var view = convertView ?? activity.LayoutInflater.Inflate(
                 Resource.Layout.CandidateListItem, parent, false);
 
+            var lblSSID = view.FindViewById<TextView>(Resource.Id.lblSSID);
+
             return view;
         }
     }
