@@ -78,16 +78,29 @@ namespace client.android
             lblSSID.Text = candidateRecords[position].ScanResult.Ssid;
             lblStatus.Text = candidateRecords[position].Status;
 
+
+            // FIX: clear out propertychanged and reassign it
+            // Otherwise we're memory leaking anytime we use convertview
+            /*
+            if (convertView != null)
+            {
+                return convertView;
+                //candidateRecords[position].PropertyChanged.
+            } */
+
             // TODO: Be sure to work out GC for this kind of operation (hanging an event off
             // a view which may go out of scope)
             candidateRecords[position].PropertyChanged += (o, p) =>
             {
-                switch (p.PropertyName)
+                activity.RunOnUiThread(() =>
                 {
-                    case nameof(CandidateRecord.Status):
-                        lblStatus.Text = candidateRecords[position].Status;
-                        break;
-                }
+                    switch (p.PropertyName)
+                    {
+                        case nameof(CandidateRecord.Status):
+                            lblStatus.Text = candidateRecords[position].Status;
+                            break;
+                    }
+                });
             };
 
             return view;

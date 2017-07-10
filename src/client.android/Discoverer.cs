@@ -21,6 +21,7 @@ using Com.AugustCellars.COSE;
 using PeterO.Cbor;
 using Com.AugustCellars.CoAP;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace client.android
 {
@@ -39,8 +40,6 @@ namespace client.android
             // Be sure WiFi is enabled
             wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
             Permission p = context.CheckSelfPermission(Manifest.Permission.ChangeWifiState);
-            var intentFilter = new IntentFilter(WifiManager.ScanResultsAvailableAction);
-            context.RegisterReceiver(this, intentFilter);
 
             // According to
             //   https://developer.xamarin.com/api/namespace/Android.Net.Wifi/ and
@@ -53,6 +52,8 @@ namespace client.android
 
         public void Discover()
         {
+            var intentFilter = new IntentFilter(WifiManager.ScanResultsAvailableAction);
+            context.RegisterReceiver(this, intentFilter);
             wifiManager.StartScan();
         }
 
@@ -118,7 +119,7 @@ namespace client.android
         }
 
 
-        protected string IdentifyHost()
+        async protected Task<string> IdentifyHost()
         {
             // Lifting from https://msdn.microsoft.com/en-us/library/system.net.networkinformation.ping(v=vs.110).aspx
             // TODO: Do mDNS stuff also
@@ -130,7 +131,7 @@ namespace client.android
 
             var data = Enumerable.Repeat<byte>(65, 32).ToArray();
 
-            var reply = ping.Send(hostName, 3000, data, pingOptions);
+            var reply = await ping.SendPingAsync(hostName, 3000, data, pingOptions);
 
             return reply.Status == IPStatus.Success ? hostName : null;
         }
@@ -177,11 +178,40 @@ namespace client.android
             // here just to keep the ball rolling
             CandidateWiFiDiscovered?.Invoke(candidates);
 
-            DiscoverOurNodes(candidates);
+            Task.Run(async () => await DiscoverOurNodes(candidates));
+        }
+
+        void Switch(ScanResult scanResult)
+        {
+            // DHCP doesn't seem to be doling out when doing this
+            // So either I'm not joining or I a not waiting long enough
+            // it *was* working, as I saw a successful ping before
+            // Not sure what's different
+            // Manually connecting to ESP AP does dole out an AP
+
+            var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
+            int netId;
+
+            if (alreadyConfigured != null)
+            {
+                netId = alreadyConfigured.NetworkId;
+            }
+            else
+            {
+                // As per https://stackoverflow.com/questions/8818290/how-do-i-connect-to-a-specific-wi-fi-network-in-android-programmatically
+                // For now we only handle open APs but a little more factory-ish and we could handle protected ones also
+                var newConf = new WifiConfiguration();
+                newConf.Ssid = scanResult.Ssid;
+                netId = wifiManager.AddNetwork(newConf);
+            }
+
+            wifiManager.Disconnect();
+            wifiManager.EnableNetwork(netId, true);
+            wifiManager.Reconnect();
         }
 
 
-        protected void DiscoverOurNodes(IEnumerable<CandidateRecord> candidates)
+        async protected Task DiscoverOurNodes(IEnumerable<CandidateRecord> candidates)
         {
             WifiInfo conn = wifiManager.ConnectionInfo;
 
@@ -206,47 +236,38 @@ namespace client.android
             {
                 var scanResult = candidate.ScanResult;
 
+                candidate.Status = "Inspecting";
+
                 Log.Info(TAG, $"Inspecting ssid: {scanResult.Ssid}");
 
-                // DHCP doesn't seem to be doling out when doing this
-                // So either I'm not joining or I a not waiting long enough
-                // it *was* working, as I saw a successful ping before
-                // Not sure what's different
-                // Manually connecting to ESP AP does dole out an AP
+                await Task.Run(() => Switch(scanResult));
+                //Switch(scanResult);
 
-                var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
-                int netId;
+                candidate.Status = "Ping host";
 
-                if (alreadyConfigured != null)
-                {
-                    netId = alreadyConfigured.NetworkId;
-                }
-                else
-                {
-                    // As per https://stackoverflow.com/questions/8818290/how-do-i-connect-to-a-specific-wi-fi-network-in-android-programmatically
-                    // For now we only handle open APs but a little more factory-ish and we could handle protected ones also
-                    var newConf = new WifiConfiguration();
-                    newConf.Ssid = scanResult.Ssid;
-                    netId = wifiManager.AddNetwork(newConf);
-                }
-
-                wifiManager.Disconnect();
-                wifiManager.EnableNetwork(netId, true);
-                wifiManager.Reconnect();
-
-                candidate.Status = "ID host";
-
-                string host = IdentifyHost();
+                string host = await IdentifyHost();
 
                 Log.Info(TAG, $"Candidate host: {host}");
 
-                candidate.Status = $"Host result: {host}";
-
                 if (host != null)
                 {
+                    candidate.Status = $"Foud: {host}";
+
                     CoapConnect(host);
+
+                    candidate.Status = $"Connected";
+                }
+                else
+                {
+                    candidate.Status = "No host";
                 }
             }
+
+#if !DEBUG_DIALOG
+            if (conn != null)
+                wifiManager.EnableNetwork(conn.NetworkId, true);
+
+#endif
         }
     }
 }
