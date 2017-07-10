@@ -70,7 +70,7 @@ namespace client.android
             DiscoverOurNodes();
         }
 
-        protected void CoapConnect(string host)
+        protected bool CoapConnect(string host)
         {
             //var ep = new CoAPEndPoint();
 
@@ -81,16 +81,18 @@ namespace client.android
             //ep.Start();
 
             request.Send();
-            Response response = request.WaitForResponse(2000);
+            Response response = request.WaitForResponse(3000);
 
             if (response == null)
             {
                 Log.Info(TAG, "COAP timeout");
-                return;
+                return false;
             }
 
             Log.Info(TAG, $"COAP responded: format = {response.ContentType}");
             Log.Info(TAG, $"COAP responded: payload = {response.PayloadString}");
+
+            return true;
         }
 
         protected void CoapsConnect(string host)
@@ -287,9 +289,9 @@ namespace client.android
                 {
                     candidate.Status = $"Foud: {host}";
 
-                    CoapConnect(host);
+                    var success = await Task.Run(() => CoapConnect(host));
 
-                    candidate.Status = $"Connected";
+                    candidate.Status = success ? "Connected" : "No COAP endpoint";
                 }
                 else
                 {
