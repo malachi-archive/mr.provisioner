@@ -39,36 +39,26 @@ namespace client.android
     /// </summary>
     public class CandidateAdapter : BaseAdapter<CandidateRecord>
     {
-        readonly IList<ScanResult> scanResults;
         readonly Activity activity;
 
-        readonly List<CandidateRecord> candidateRecords;
+        readonly IList<CandidateRecord> candidateRecords;
 
-        public CandidateAdapter(Activity activity, IList<ScanResult> scanResults)
+        public CandidateAdapter(Activity activity, IList<CandidateRecord> candidates)
         {
             this.activity = activity;
-            this.scanResults = scanResults;
-            var candidateRecords = from scanResult in scanResults
-                                    select new CandidateRecord
-                                    {
-                                        ScanResult = scanResult
-                                    };
 
-            this.candidateRecords = candidateRecords.ToList();
+            this.candidateRecords = candidates;
         }
 
         public override CandidateRecord this[int position]
         {
             get
             {
-                return new CandidateRecord()
-                {
-                    ScanResult = scanResults[position]
-                };
+                return candidateRecords[position];
             }
         }
 
-        public override int Count => scanResults.Count;
+        public override int Count => candidateRecords.Count;
 
         public override long GetItemId(int position)
         {
@@ -85,7 +75,7 @@ namespace client.android
             var lblSSID = view.FindViewById<TextView>(Resource.Id.lblSSID);
             var lblStatus = view.FindViewById<TextView>(Resource.Id.lblStatus);
 
-            lblSSID.Text = scanResults[position].Ssid;
+            lblSSID.Text = candidateRecords[position].ScanResult.Ssid;
             lblStatus.Text = candidateRecords[position].Status;
 
             // TODO: Be sure to work out GC for this kind of operation (hanging an event off

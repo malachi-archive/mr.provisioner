@@ -162,22 +162,26 @@ namespace client.android
         }
 
 
-        public event Action<IList<ScanResult>> CandidateWiFiDiscovered;
+        public event Action<IList<CandidateRecord>> CandidateWiFiDiscovered;
 
 
         protected void DiscoverOurNodes()
         {
+            var candidates = wifiManager.ScanResults.Where(IsOpenWifi).
+                Select(scanResult => new CandidateRecord
+                {
+                    ScanResult = scanResult
+                }).ToArray();
+
             // FIX: this is 100% the wrong place for this, but doing it
             // here just to keep the ball rolling
-            CandidateWiFiDiscovered?.Invoke(
-                wifiManager.ScanResults.Where(IsOpenWifi).ToArray());
+            CandidateWiFiDiscovered?.Invoke(candidates);
 
-            DiscoverOurNodes(IsOpenWifi);
+            DiscoverOurNodes(candidates);
         }
 
 
-        protected void DiscoverOurNodes(
-            Func<ScanResult, bool> isCandidateNetwork)
+        protected void DiscoverOurNodes(IEnumerable<CandidateRecord> candidates)
         {
             WifiInfo conn = wifiManager.ConnectionInfo;
 
@@ -198,8 +202,10 @@ namespace client.android
 #endif
             //Toast.MakeText(Application.Context, "TEST", )
 
-            foreach (ScanResult scanResult in wifiManager.ScanResults.Where(isCandidateNetwork))
+            foreach (var candidate in candidates)
             {
+                var scanResult = candidate.ScanResult;
+
                 Log.Info(TAG, $"Inspecting ssid: {scanResult.Ssid}");
 
                 // DHCP doesn't seem to be doling out when doing this
@@ -228,9 +234,13 @@ namespace client.android
                 wifiManager.EnableNetwork(netId, true);
                 wifiManager.Reconnect();
 
+                candidate.Status = "ID host";
+
                 string host = IdentifyHost();
 
                 Log.Info(TAG, $"Candidate host: {host}");
+
+                candidate.Status = $"Host result: {host}";
 
                 if (host != null)
                 {
