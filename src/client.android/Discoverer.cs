@@ -40,6 +40,7 @@ namespace client.android
             // Be sure WiFi is enabled
             wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
             Permission p = context.CheckSelfPermission(Manifest.Permission.ChangeWifiState);
+            p = context.CheckSelfPermission(Manifest.Permission.AccessWifiState);
 
             // According to
             //   https://developer.xamarin.com/api/namespace/Android.Net.Wifi/ and
@@ -183,31 +184,38 @@ namespace client.android
 
         void Switch(ScanResult scanResult)
         {
-            // DHCP doesn't seem to be doling out when doing this
-            // So either I'm not joining or I a not waiting long enough
-            // it *was* working, as I saw a successful ping before
-            // Not sure what's different
-            // Manually connecting to ESP AP does dole out an AP
+            //MainActivity.Singleton.RunOnUiThread(() =>
+            //{
+                // DHCP doesn't seem to be doling out when doing this
+                // So either I'm not joining or I a not waiting long enough
+                // it *was* working, as I saw a successful ping before
+                // Not sure what's different
+                // Manually connecting to ESP AP does dole out an AP
 
-            var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
-            int netId;
+                var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
+                int netId;
 
-            if (alreadyConfigured != null)
-            {
-                netId = alreadyConfigured.NetworkId;
-            }
-            else
-            {
-                // As per https://stackoverflow.com/questions/8818290/how-do-i-connect-to-a-specific-wi-fi-network-in-android-programmatically
-                // For now we only handle open APs but a little more factory-ish and we could handle protected ones also
-                var newConf = new WifiConfiguration();
-                newConf.Ssid = scanResult.Ssid;
-                netId = wifiManager.AddNetwork(newConf);
-            }
+                if (alreadyConfigured != null)
+                {
+                    netId = alreadyConfigured.NetworkId;
+                    wifiManager.RemoveNetwork(netId);
+                }
+                //else
+                {
+                    // As per https://stackoverflow.com/questions/8818290/how-do-i-connect-to-a-specific-wi-fi-network-in-android-programmatically
+                    // For now we only handle open APs but a little more factory-ish and we could handle protected ones also
+                    var newConf = new WifiConfiguration();
+                    newConf.Ssid = scanResult.Ssid;
+                    // OK thinking we need to do this but it's deprecated and doesn't work
+                    //newConf.AllowedKeyManagement.
+                    newConf.AllowedKeyManagement.Set((int)KeyManagementType.None);
+                    netId = wifiManager.AddNetwork(newConf);
+                }
 
-            wifiManager.Disconnect();
-            wifiManager.EnableNetwork(netId, true);
-            wifiManager.Reconnect();
+                wifiManager.Disconnect();
+                wifiManager.EnableNetwork(netId, true);
+                wifiManager.Reconnect();
+            //});
         }
 
 
@@ -243,7 +251,21 @@ namespace client.android
                 await Task.Run(() => Switch(scanResult));
                 //Switch(scanResult);
 
-                candidate.Status = "Ping host";
+                var newConn = wifiManager.ConnectionInfo;
+
+                var dhcpInfo = wifiManager.DhcpInfo;
+
+                int _ip = dhcpInfo.IpAddress;
+                string __ip = Android.Text.Format.Formatter.FormatIpAddress(_ip);
+
+                // https://forums.xamarin.com/discussion/2260/get-current-ip-address
+                // https://stackoverflow.com/questions/16730711/get-my-wifi-ip-address-android
+                //Java.Net.InetAddress.GetByAddress()
+                string ip = Android.Text.Format.Formatter.FormatIpAddress(newConn.IpAddress);
+
+                candidate.Status = $"Our IP: {ip}";
+
+                //candidate.Status = "Ping host";
 
                 string host = await IdentifyHost();
 
