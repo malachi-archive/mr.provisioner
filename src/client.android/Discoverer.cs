@@ -70,11 +70,16 @@ namespace client.android
             DiscoverOurNodes();
         }
 
+        // FIX: Something odd
+        // This works first time, then never works again until app is restarted...
+        // It's UDP so pretty darned connectionless... and I can see everything seems to recycle on ESP
+        // (and anyways ESP always responds after app is restarted)
         protected bool CoapConnect(string host)
         {
             //var ep = new CoAPEndPoint();
 
             Request request = Request.NewGet();
+            //Request request = new Request(Method.GET); // Doesn't change behavior 
 
             request.URI = new Uri($"coap://{host}/.well-known/core");
 
@@ -185,8 +190,6 @@ namespace client.android
                     ScanResult = scanResult
                 }).ToArray();
 
-            // FIX: this is 100% the wrong place for this, but doing it
-            // here just to keep the ball rolling
             CandidateWiFiDiscovered?.Invoke(candidates);
 
             Task.Run(async () => await DiscoverOurNodes(candidates));
@@ -205,6 +208,8 @@ namespace client.android
                 var alreadyConfigured = wifiManager.ConfiguredNetworks.FirstOrDefault(x => x.Ssid == scanResult.Ssid);
                 int netId;
 
+                // NOTE: Be careful with this, make sure we only rip out open unsecured network
+                // NOTE: We might not actually need to rip anything out anyway...
                 if (alreadyConfigured != null)
                 {
                     netId = alreadyConfigured.NetworkId;
@@ -283,11 +288,11 @@ namespace client.android
 
                 string host = await IdentifyHost();
 
-                Log.Info(TAG, $"Candidate host: {host}");
+                //Log.Info(TAG, $"Candidate host: {host}");
 
                 if (host != null)
                 {
-                    candidate.Status = $"Foud: {host}";
+                    candidate.Status = $"Found: {host}";
 
                     var success = await Task.Run(() => CoapConnect(host));
 
