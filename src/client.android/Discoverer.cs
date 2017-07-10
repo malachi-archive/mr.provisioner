@@ -126,15 +126,23 @@ namespace client.android
             // TODO: Do mDNS stuff also
             var ping = new Ping();
             var pingOptions = new PingOptions();
-            string hostName = "176.16.0.1";
+            string hostName = "172.16.0.1";
 
             pingOptions.DontFragment = true;
 
             var data = Enumerable.Repeat<byte>(65, 32).ToArray();
 
-            var reply = await ping.SendPingAsync(hostName, 3000, data, pingOptions);
+            try
+            {
+                var reply = await ping.SendPingAsync(hostName, 3000, data, pingOptions);
 
-            return reply.Status == IPStatus.Success ? hostName : null;
+                return reply.Status == IPStatus.Success ? hostName : null;
+            }
+            catch(Exception e)
+            {
+                Log.Error(TAG, "Error: " +e);
+                return null;
+            }
         }
 
         static bool IsOpenWifi(ScanResult scanResult)
@@ -249,6 +257,10 @@ namespace client.android
                 Log.Info(TAG, $"Inspecting ssid: {scanResult.Ssid}");
 
                 await Task.Run(() => Switch(scanResult));
+
+                // TODO: link into DhcpStateMachine and get dhcp asap
+                // instead of waiting around like this
+                await Task.Delay(1500);
                 //Switch(scanResult);
 
                 var newConn = wifiManager.ConnectionInfo;
