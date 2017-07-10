@@ -39,16 +39,21 @@ namespace client.android
             // Be sure WiFi is enabled
             wifiManager = (WifiManager)context.GetSystemService(Context.WifiService);
             Permission p = context.CheckSelfPermission(Manifest.Permission.ChangeWifiState);
-            wifiManager.StartScan();
             var intentFilter = new IntentFilter(WifiManager.ScanResultsAvailableAction);
             context.RegisterReceiver(this, intentFilter);
 
             // According to
             //   https://developer.xamarin.com/api/namespace/Android.Net.Wifi/ and
             //   https://stackoverflow.com/questions/32151603/scan-results-available-action-return-empty-list-in-android-6-0
-            context.CheckSelfPermission("android.hardware.wifi");
+            //context.CheckSelfPermission("android.hardware.wifi");
 
             this.context = context;
+        }
+
+
+        public void Discover()
+        {
+            wifiManager.StartScan();
         }
 
         public override void OnReceive(Context context, Intent intent)
@@ -162,12 +167,12 @@ namespace client.android
 
         protected void DiscoverOurNodes()
         {
-            DiscoverOurNodes(IsOpenWifi);
-
             // FIX: this is 100% the wrong place for this, but doing it
             // here just to keep the ball rolling
             CandidateWiFiDiscovered?.Invoke(
                 wifiManager.ScanResults.Where(IsOpenWifi).ToArray());
+
+            DiscoverOurNodes(IsOpenWifi);
         }
 
 
@@ -178,6 +183,7 @@ namespace client.android
 
             wifiManager.DisableNetwork(conn.NetworkId);
 
+#if DEBUG_DIALOG
             var d = new AlertDialog.Builder(MainActivity.Singleton);
 
             d.SetTitle("Got here");
@@ -189,6 +195,7 @@ namespace client.android
                         wifiManager.EnableNetwork(conn.NetworkId, true);
                 });
             d.Show();
+#endif
             //Toast.MakeText(Application.Context, "TEST", )
 
             foreach (ScanResult scanResult in wifiManager.ScanResults.Where(isCandidateNetwork))

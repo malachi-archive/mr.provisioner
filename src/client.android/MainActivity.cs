@@ -28,6 +28,8 @@ namespace client.android
             {
                 var d = new Discoverer(ApplicationContext);
 
+                d.Discover();
+
                 d.CandidateWiFiDiscovered += scanResults =>
                 {
                     list.Adapter = new CandidateAdapter(this, scanResults);

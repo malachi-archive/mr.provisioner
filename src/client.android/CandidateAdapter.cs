@@ -20,7 +20,7 @@ namespace client.android
     /// </summary>
     public class CandidateAdapter : BaseAdapter<CandidateRecord>
     {
-        IList<ScanResult> scanResults;
+        readonly IList<ScanResult> scanResults;
         readonly Activity activity;
 
         public CandidateAdapter(Activity activity, IList<ScanResult> scanResults)
@@ -40,13 +40,7 @@ namespace client.android
             }
         }
 
-        public override int Count
-        {
-            get
-            {
-                return scanResults.Count;
-            }
-        }
+        public override int Count => scanResults.Count;
 
         public override long GetItemId(int position)
         {
@@ -61,6 +55,8 @@ namespace client.android
                 Resource.Layout.CandidateListItem, parent, false);
 
             var lblSSID = view.FindViewById<TextView>(Resource.Id.lblSSID);
+
+            lblSSID.Text = scanResults[position].Ssid;
 
             return view;
         }
