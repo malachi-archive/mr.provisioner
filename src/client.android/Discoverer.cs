@@ -54,12 +54,37 @@ namespace client.android
         public void Discover()
         {
             var intentFilter = new IntentFilter(WifiManager.ScanResultsAvailableAction);
+            
             context.RegisterReceiver(this, intentFilter);
             wifiManager.StartScan();
         }
 
+        // Attempting to use this https://android.googlesource.com/platform/frameworks/base/+/gingerbread/wifi/java/android/net/wifi/WifiStateTracker.java
+        // to track DHCP updates, but no dice
+        public class DhcpRenewReceiver : BroadcastReceiver
+        {
+            public static readonly int DHCP_RENEW = 0;
+            public static readonly string ACTION_DHCP_RENEW = "android.net.wifi.DHCP_RENEW";
+
+            public override void OnReceive(Context context, Intent intent)
+            {
+                Log.Info(TAG, "DHCP RENEW");
+            }
+
+
+            public DhcpRenewReceiver(Context context)
+            {
+                var intent = new Intent(ACTION_DHCP_RENEW);
+                //var intentFilter = new IntentFilter(ACTION_DHCP_RENEW);
+                var _intent = PendingIntent.GetBroadcast(context, DHCP_RENEW, intent, PendingIntentFlags.OneShot);
+                context.RegisterReceiver(this, new IntentFilter(ACTION_DHCP_RENEW));
+            }
+        }
+
         public override void OnReceive(Context context, Intent intent)
         {
+            var renewer = new DhcpRenewReceiver(context);
+
             foreach (ScanResult scanResult in wifiManager.ScanResults)
             {
                 Log.Debug(TAG, $"Found ssid: {scanResult.Ssid} with capabilities {scanResult.Capabilities}");
@@ -272,11 +297,13 @@ namespace client.android
 
                 var newConn = wifiManager.ConnectionInfo;
 
+#if UNUSED
                 var dhcpInfo = wifiManager.DhcpInfo;
 
                 int _ip = dhcpInfo.IpAddress;
                 string __ip = Android.Text.Format.Formatter.FormatIpAddress(_ip);
 
+#endif
                 // https://forums.xamarin.com/discussion/2260/get-current-ip-address
                 // https://stackoverflow.com/questions/16730711/get-my-wifi-ip-address-android
                 //Java.Net.InetAddress.GetByAddress()
