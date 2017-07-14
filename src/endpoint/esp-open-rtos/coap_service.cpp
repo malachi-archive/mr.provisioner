@@ -9,6 +9,16 @@
 
 #include "coap_lwip.hpp"
 
+#ifdef MRPROVISIONER_FEATURE_DTLS_ENABLE
+extern "C" {
+
+#include "dtls_server.h"
+
+}
+#endif
+
+using namespace FactUtilEmbedded::std;
+
 //const uint16_t rsplen = 128;
 //static char rsp[rsplen] = "";
 const coap_resource_path_t path_well_known_core = {2, {".well-known", "core"}};
@@ -139,8 +149,68 @@ static int handle_put_ssid_pass(const coap_resource_t *resource,
                               pkt);
 }
 
+#ifdef MRPROVISIONER_FEATURE_DTLS_ENABLE
+// presently CoapServer is hardwired to LWIP
+// not a terrible thing, but that precludes drop in compatibility for mbedtls
+yacoap::CoapManager<resources> coapManager;
+// FIX: put this into context eventually.  For now, this global is OK in context
+// of normal embedded behavior - just totally non reentrant friendly
+yacoap::CoapPacket coapResponse;
 
-//yacoap::CoapManager<resources> coapManager;
+static void coaps_request_handler(const uint8_t* buffer, size_t len, void* context)
+{
+    yacoap::CoapRequest request(buffer, len);
+
+    // TODO: consolidate this in a more open ended CoapServer
+    if (request.getResult() > COAP_ERR)
+        clog << "Bad packet rc=" << request.getResult() << endl;
+    else
+    {
+        coapManager.handleRequest(request, coapResponse);
+    }
+}
+
+static size_t coaps_response_handler(uint8_t* buffer, size_t max_len, void* context)
+{
+    // TODO: assert we don't exceed max_len
+
+    int rc;
+    size_t buflen;
+
+    if ((rc = coapResponse.build(buffer, &buflen)) > COAP_ERR)
+    {
+        clog << "coap_build failed rc=" << rc << endl;
+        return -1;
+    }
+    else
+    {
+#ifdef YACOAP_DEBUG
+        coapResponse.dump();
+#endif
+        return buflen;
+    }
+}
+
+
+dtls_server_request_handler_t    dtls_server_request_handler = coaps_request_handler;
+dtls_server_response_handler_t   dtls_server_response_handler = coaps_response_handler;
+
+static int _handle_get_well_known_core(const coap_resource_t *resource,
+                                          const coap_packet_t *inpkt,
+                                          coap_packet_t *pkt)
+{
+    return coapManager.handle_get_well_known_core(resource, inpkt, pkt);
+}
+
+
+void coapTask(void *pvParameters)
+{
+    for(;;)
+    {
+        //coapServer.handler();
+    }
+}
+#else
 
 yacoap::CoapServer<resources> coapServer;
 
@@ -151,16 +221,6 @@ static int _handle_get_well_known_core(const coap_resource_t *resource,
     return coapServer.handle_get_well_known_core(resource, inpkt, pkt);
 }
 
-#ifdef DEBUG_ENABLE1
-
-
-
-/*
-void resource_setup(const coap_resource_t *resources)
-{
-    coap_make_link_format(resources, rsp, rsplen);
-    printf("resources: %s\n", rsp);
-} */
 
 
 void coapTask(void *pvParameters)
@@ -168,8 +228,6 @@ void coapTask(void *pvParameters)
     for(;;)
     {
         coapServer.handler();
-        //vTaskDelay(5000 / portTICK_PERIOD_MS);
-        //printf("\nRecycling");
     }
 }
 #endif
