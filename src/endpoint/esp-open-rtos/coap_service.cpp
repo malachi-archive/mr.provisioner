@@ -24,6 +24,9 @@ const coap_resource_path_t path_ssid_pass = {2, {"ssid", "pass"}};
 static int handle_put_ssid_name(const coap_resource_t *resource,
                             const coap_packet_t *inpkt,
                             coap_packet_t *pkt);
+static int handle_put_ssid_pass(const coap_resource_t *resource,
+                            const coap_packet_t *inpkt,
+                            coap_packet_t *pkt);
 
 struct sdk_station_config config;
 
@@ -34,6 +37,9 @@ coap_resource_t resources[] =
         COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_APP_LINKFORMAT)},
     {COAP_RDY, COAP_METHOD_PUT, COAP_TYPE_ACK,
         handle_put_ssid_name, &path_ssid_name,
+        COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)}, // might want to set this to TXT_PLAIN, not sure if this refers to incoming or outgoing
+    {COAP_RDY, COAP_METHOD_PUT, COAP_TYPE_ACK,
+        handle_put_ssid_pass, &path_ssid_pass,
         COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)}, // might want to set this to TXT_PLAIN, not sure if this refers to incoming or outgoing
     
     /*
@@ -68,7 +74,14 @@ static int handle_put_ssid_name(const coap_resource_t *resource,
         light = '0';
         printf("Light OFF\n");
     }*/
-    printf("ssid name = %s\n", inpkt->payload.p);
+    // FIX: Kludgey and not sure how reliable it is to write back into this buffer
+    auto len = inpkt->payload.len;
+    //inpkt->payload.p[len] = 0;
+    memcpy(config.ssid, inpkt->payload.p, len);
+    config.ssid[len] = 0;
+    printf("ssid name = %s\n", config.ssid);
+
+    //strcpy((char*)config.ssid, (char*)inpkt->payload.p); 
 
     /* TODO: we'll do this once we get our hands on PASS
        TODO: eventually make a POST so that we get NAME and PASS at the same time
@@ -88,6 +101,44 @@ static int handle_put_ssid_name(const coap_resource_t *resource,
                               &dummy, 1,
                               pkt);
 }
+
+
+static int handle_put_ssid_pass(const coap_resource_t *resource,
+                            const coap_packet_t *inpkt,
+                            coap_packet_t *pkt)
+{
+    static uint8_t dummy = 0;
+
+    printf("handle_put_ssid_pass\n");
+    if (inpkt->payload.len == 0) {
+        return coap_make_response(inpkt->hdr.id, &inpkt->tok,
+                                  COAP_TYPE_ACK, COAP_RSPCODE_BAD_REQUEST,
+                                  NULL, NULL, 0,
+                                  pkt);
+    }
+
+    // FIX: Kludgey and not sure how reliable it is to write back into this buffer
+    auto len = inpkt->payload.len;
+    //inpkt->payload.p[len] = 0;
+    memcpy(config.password, inpkt->payload.p, len);
+    config.password[len] = 0;
+    printf("ssid pass = %s\n", config.password);
+
+    //strcpy((char*)config.password, (char*)inpkt->payload.p); 
+
+    /*
+        sdk_wifi_set_opmode(STATION_MODE);
+    sdk_wifi_station_set_config(&config);
+    */
+
+    return coap_make_response(inpkt->hdr.id, &inpkt->tok,
+                              COAP_TYPE_ACK, COAP_RSPCODE_CHANGED,
+                              resource->content_type,
+                              // not sure if we can return a null here
+                              &dummy, 1,
+                              pkt);
+}
+
 
 //yacoap::CoapManager<resources> coapManager;
 
@@ -117,8 +168,8 @@ void coapTask(void *pvParameters)
     for(;;)
     {
         coapServer.handler();
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-        printf("\nRecycling");
+        //vTaskDelay(5000 / portTICK_PERIOD_MS);
+        //printf("\nRecycling");
     }
 }
 #endif
