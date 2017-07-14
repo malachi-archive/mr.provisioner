@@ -13,3 +13,6 @@
 [submodule "ext/util.embedded/util.embedded"]
 	path = ext/util.embedded/util.embedded
 	url = git@github.com:malachib/util.embedded.git
+[submodule "ext/framework.abstraction"]
+	path = ext/framework.abstraction
+	url = git@github.com:malachib/framework.abstraction.git
