@@ -18,11 +18,22 @@ static int _handle_get_well_known_core(const coap_resource_t *resource,
                                           const coap_packet_t *inpkt,
                                           coap_packet_t *pkt);
 
+const coap_resource_path_t path_ssid_name = {2, {"ssid", "name"}};
+const coap_resource_path_t path_ssid_pass = {2, {"ssid", "pass"}};                                       
+
+static int handle_put_ssid_name(const coap_resource_t *resource,
+                            const coap_packet_t *inpkt,
+                            coap_packet_t *pkt);
+
 coap_resource_t resources[] =
 {
     {COAP_RDY, COAP_METHOD_GET, COAP_TYPE_ACK,
         _handle_get_well_known_core, &path_well_known_core,
         COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_APP_LINKFORMAT)},
+    {COAP_RDY, COAP_METHOD_PUT, COAP_TYPE_ACK,
+        handle_put_ssid_name, &path_ssid_name,
+        COAP_SET_CONTENTTYPE(COAP_CONTENTTYPE_NONE)}, // might want to set this to TXT_PLAIN, not sure if this refers to incoming or outgoing
+    
     /*
     {COAP_RDY, COAP_METHOD_GET, COAP_TYPE_ACK,
         handle_get_light, &path_light,
@@ -33,6 +44,37 @@ coap_resource_t resources[] =
     COAP_RESOURCE_NULL
 };
 
+static int handle_put_ssid_name(const coap_resource_t *resource,
+                            const coap_packet_t *inpkt,
+                            coap_packet_t *pkt)
+{
+    static uint8_t dummy = 0;
+
+    printf("handle_put_ssid_name\n");
+    if (inpkt->payload.len == 0) {
+        return coap_make_response(inpkt->hdr.id, &inpkt->tok,
+                                  COAP_TYPE_ACK, COAP_RSPCODE_BAD_REQUEST,
+                                  NULL, NULL, 0,
+                                  pkt);
+    }
+    /*
+    if (inpkt->payload.p[0] == '1') {
+        light = '1';
+        printf("Light ON\n");
+    }
+    else {
+        light = '0';
+        printf("Light OFF\n");
+    }*/
+    printf("ssid name = %s\n", inpkt->payload.p);
+
+    return coap_make_response(inpkt->hdr.id, &inpkt->tok,
+                              COAP_TYPE_ACK, COAP_RSPCODE_CHANGED,
+                              resource->content_type,
+                              // not sure if we can return a null here
+                              &dummy, 1,
+                              pkt);
+}
 
 //yacoap::CoapManager<resources> coapManager;
 
