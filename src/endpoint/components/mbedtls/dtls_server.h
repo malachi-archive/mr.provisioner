@@ -13,6 +13,6 @@ extern dtls_server_request_handler_t    dtls_server_request_handler;
 extern dtls_server_response_handler_t   dtls_server_response_handler;
 
 // TODO: stick this out into framework abstraction area
-#ifdef ESP_PLATFORM
+#if defined(ESP_PLATFORM) || defined(ESP_OPEN_RTOS)
 #define RTOS_FREERTOS
 #endif

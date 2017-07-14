@@ -30,6 +30,14 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
+#include "dtls_server.h"
+
+#ifdef RTOS_FREERTOS
+#define FUNCTION_DECLARATION() int dtls_server_handler( void )
+#else
+#define FUNCTION_DECLARATION() int main( void )
+#endif
+
 #ifndef MBEDTLS_CPP
 
 #if defined(MBEDTLS_PLATFORM_C)
@@ -51,7 +59,7 @@
     !defined(MBEDTLS_CERTS_C) || !defined(MBEDTLS_PEM_PARSE_C) ||         \
     !defined(MBEDTLS_TIMING_C)
 
-int main( void )
+FUNCTION_DECLARATION()
 {
     printf( "MBEDTLS_SSL_SRV_C and/or MBEDTLS_SSL_PROTO_DTLS and/or "
             "MBEDTLS_SSL_COOKIE_C and/or MBEDTLS_NET_C and/or "
@@ -90,8 +98,6 @@ int main( void )
 #include "mbedtls/ssl_cache.h"
 #endif
 
-#include "dtls_server.h"
-
 #define READ_TIMEOUT_MS 10000   /* 5 seconds */
 #define DEBUG_LEVEL 0
 
@@ -105,7 +111,7 @@ static void my_debug( void *ctx, int level,
     fflush(  (FILE *) ctx  );
 }
 
-int main( void )
+FUNCTION_DECLARATION()
 {
     int ret, len;
     mbedtls_net_context listen_fd, client_fd;
