@@ -90,6 +90,8 @@ int main( void )
 #include "mbedtls/ssl_cache.h"
 #endif
 
+#include "dtls_server.h"
+
 #define READ_TIMEOUT_MS 10000   /* 5 seconds */
 #define DEBUG_LEVEL 0
 
@@ -358,6 +360,11 @@ reset:
     }
 
     len = ret;
+
+    if(dtls_server_request_handler != NULL)
+        dtls_server_request_handler(buf, len, NULL);
+
+    // TODO: Turn these printfs into debug-only 
     printf( " %d bytes read\n\n%s\n\n", len, buf );
 
     /*
@@ -365,6 +372,9 @@ reset:
      */
     printf( "  > Write to client:" );
     fflush( stdout );
+
+    if(dtls_server_response_handler != NULL)
+        len = dtls_server_response_handler(buf, sizeof(buf), NULL);
 
     do ret = mbedtls_ssl_write( &ssl, buf, len );
     while( ret == MBEDTLS_ERR_SSL_WANT_READ ||

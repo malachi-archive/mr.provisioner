@@ -5,6 +5,7 @@ src/packages
 # Visual studio ignores
 .vs/
 *.user
+.vscode/settings.json
 
 # Xamarin studio ignores
 *.userprefs
