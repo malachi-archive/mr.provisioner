@@ -103,3 +103,7 @@
 #define CONFIG_MBEDTLS_HARDWARE_MPI 1
 #define CONFIG_MONITOR_BAUD_OTHER_VAL 115200
 #define CONFIG_ESPTOOLPY_PORT "/dev/ttyUSB0"
+#define CONFIG_FREERTOS_MAX_TASK_NAME_LEN 50
+// following gleaned from https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/config/sdkconfig.h
+#define CONFIG_ESP32_XTAL_FREQ 0
+#define CONFIG_ESP32_XTAL_FREQ_AUTO 1
