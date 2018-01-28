@@ -16,3 +16,7 @@ extern dtls_server_response_handler_t   dtls_server_response_handler;
 #if defined(ESP_PLATFORM) || defined(ESP_OPEN_RTOS)
 #define RTOS_FREERTOS
 #endif
+
+#ifdef RTOS_FREERTOS
+int dtls_server_handler( void );
+#endif
