@@ -4,3 +4,6 @@
 [submodule "ext/framework.abstraction"]
 	path = ext/framework.abstraction
 	url = git@github.com:malachib/framework.abstraction.git
+[submodule "ext/mc-coap"]
+	path = ext/mc-coap
+	url = git@github.com:moducom/mc-coap.git
